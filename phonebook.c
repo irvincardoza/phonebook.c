@@ -23,7 +23,7 @@ void list_contact();
 void edit_contact();
 void search_contact();
 void delete_contact();
-// void got(char *name);
+
 
 
 void main_menu() {
@@ -108,10 +108,9 @@ void list_contact(){
         printf("ERROR\n");
         return;
     }
-    while(fread(&add,sizeof(add),1,file)==1){
-        printf("Name=%s\nDesignation=%s\nMobile Number=%ld\nEmail=%s",add.name,add.designation,add.mobile_number,add.email);
-
-
+    while (fread(&add, sizeof(add), 1, file) == 1) {
+        printf("Name: %s\nDesignation: %s\nMobile Number: %ld\nEmail: %s\n\n",
+               add.name, add.designation, add.mobile_number, add.email);
     }
     fclose(file);
     printf("\nEnter any key to continue");
@@ -120,18 +119,139 @@ void list_contact(){
     main_menu();
 
 }
-void edit_contact(){
-    NULL;
+void edit_contact() {
+    FILE *file;
+    struct contact add, edit;
+    int flag = 0;
+    char name[50];
+    file = fopen("record.txt", "rb+");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+    printf("\nEnter contact name to edit: ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = '\0';  // using fgets to avoid tab/space error
+    
+    while(fread(&add,sizeof(add),1,file)==1) {
+        if(strcmp(name, add.name)==0){
+            printf("\nEnter new name: ");
+            fgets(edit.name, sizeof(edit.name),stdin);
+            edit.name[strcspn(edit.name,"\n")] ='\0';// removes newline
 
+            printf("\nEnter new designation: ");
+            fgets(edit.designation,sizeof(edit.designation),stdin);
+            edit.designation[strcspn(edit.designation,"\n")]='\0';  // removes newline
+
+        printf("\nEnter new mobile number: ");
+        scanf("%ld", &edit.mobile_number);
+            // Consume newline char
+            int c;
+            while((c=getchar())!='\n'&& c!= EOF);
+
+     printf("\nEnter new email: ");
+            fgets(edit.email, sizeof(edit.email), stdin);
+            edit.email[strcspn(edit.email, "\n")] = '\0';  // Remove newline character
+
+        fseek(file, -sizeof(add), SEEK_CUR);
+      fwrite(&edit, sizeof(edit), 1, file);
+         flag = 1;
+          printf("\nContact edited successfully!\n");
+            break;
+        }
+    }
+    if (!flag) {
+        printf("Contact not found.\n");
+    }
+    fclose(file);
+    printf("\nEnter any key to continue");
+    getchar();
+    main_menu();
 }
+
 void search_contact(){
-    NULL;
+    FILE*file;
+    struct contact p;
+    char name[100];
+    file=fopen("record.txt","rb");
+    if (file==NULL){
+        printf("Error opening file\n");
+        return;
+    }
+    printf("\nEnter name of contact to search...");
+        fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = '\0';  // using fgets to avoid tab/space error
+    int found=0;
+    while(fread(&p,sizeof(p),1,file)==1){
+        if(strcmp(p.name,name)==0){
+            printf("\nHere's information about %s\n",name);
+            printf("Name: %s\n Designation: %s\n Mobile number %ld\nEmail: %s\n",p.name,p.designation,p.mobile_number,p.email);
+            found=1;
+            break;
+        }
+    }
+    fclose(file);
+    if(!found){
+        printf("Contact not found.\n");
+    }
+    printf("\n Enter any key to continue");
+    getchar();
+    getchar();
+    main_menu();
+
+
+
 
 }
-void delete_contact(){
-    NULL;
-
+void delete_contact() {
+    FILE *file, *temp_file;
+    struct contact current_contact;
+    int found = 0;
+    char name[50];
+    
+    file = fopen("record.txt", "rb");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+    
+    temp_file = fopen("temp.txt", "wb");
+    if (temp_file == NULL) {
+        printf("Error creating temporary file.\n");
+        fclose(file);
+        return;
+    }
+    
+    printf("Enter the name of the contact you want to delete: ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = '\0';  // Removing any trailing newline character
+    
+    while (fread(&current_contact, sizeof(current_contact), 1, file) == 1) {
+        if (strcmp(name, current_contact.name) != 0) {
+            fwrite(&current_contact, sizeof(current_contact), 1, temp_file);
+        } else {
+            found = 1;
+        }
+    }
+    
+    fclose(file);
+    fclose(temp_file);
+    
+    if (!found) {
+        printf("Contact not found.\n");
+        remove("temp.txt");  // Deleting the temporary file
+    } else {
+        remove("record.txt");
+        rename("temp.txt", "record.txt");
+        printf("Contact deleted successfully.\n");
+    }
+    
+    printf("\nEnter any key to continue...");
+    getchar();
+    getchar();
+    main_menu();
 }
+
 
 int main() {
     main_menu();
