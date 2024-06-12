@@ -64,6 +64,7 @@ phonebook/
 ├── phonebook.c     # Main source code file
 ├── record.txt      # File to store contacts (created at runtime)
 ├── README.md       # Project documentation
+```
 
 Contact Structure
 Each contact has the following details:
